@@ -1,12 +1,15 @@
 # WB_Marketplace
 
 Ссылка на таблицу Miro:
+
 https://miro.com/welcomeonboard/VjhwSENtRXdIWW5SUEYxZW14MmQrekFQdDg5ai9hWUZra2xwZEhSMW01NllBTGNxTnVIZThmUXhMVWtRbXAxK3NsL3dMSi9kb0czRkdEQXNqZUFwL0pLS1kxc040UVRrMG5wdlVEaUVYdUhOanFxV2NaUFhmZ2w0NEVZNVYvS0hBd044SHFHaVlWYWk0d3NxeHNmeG9BPT0hdjE=?share_link_id=725082127437
 
 Ссылка на документацию:
+
 https://docs.google.com/document/d/1_PmoK0As8omv8hmAYgnwCxJOP9WTvAXUHr8zORlqTgs/edit?usp=sharing
 
 Основные момент:
+
 работаем не с новой аудиторией а с текущей 
 помогаем переходить продавцу в другое маржинальные сфера другое способы доставки 
 
