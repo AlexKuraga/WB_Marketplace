@@ -35,6 +35,3 @@ https://docs.google.com/document/d/1_PmoK0As8omv8hmAYgnwCxJOP9WTvAXUHr8zORlqTgs/
 какие данные нам надо
 как разметить данные 
 
-документация сделать
-архитектура
-бизнес процессы
