@@ -19,10 +19,6 @@ type repositoryBundle struct {
 }
 
 // Repositories groups data access dependencies for the service layer.
-func Repositories(
-	recommendations repository.RecommendationRepository,
-) repositoryBundle {
-	return repositoryBundle{
-		Recommendations: recommendations,
-	}
+func Repositories(recommendations repository.RecommendationRepository) repositoryBundle {
+	return repositoryBundle{Recommendations: recommendations}
 }

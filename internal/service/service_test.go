@@ -8,9 +8,9 @@ import (
 func TestRecommendationServiceWithoutRepository(t *testing.T) {
 	svc := NewRecommendationService(repositoryBundle{})
 
-	recs, err := svc.ListActiveBySeller(context.Background(), 1)
+	recs, err := svc.GetActiveBySeller(context.Background(), 1)
 	if err != nil {
-		t.Fatalf("ListActiveBySeller() error = %v", err)
+		t.Fatalf("GetActiveBySeller() error = %v", err)
 	}
 
 	if recs == nil {

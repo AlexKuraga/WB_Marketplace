@@ -9645,5 +9645,30 @@ insert into recommendations (id, seller_id, trigger_id, recommendation_type_id, 
 insert into seller_notification_log (id, seller_id, recommendation_id, channel_code, delivery_system_id, status, payload_json, sent_at, delivered_at, opened_at, clicked_at, error_message, created_at, updated_at) values (313, 200, 313, 'email', 'DELIVERY_0000313', 'ready_to_send', '{"seller_id": 200, "recommendation_id": 313, "channel": "email"}'::jsonb, NULL, NULL, NULL, NULL, NULL, '2026-03-19T09:19:31.495478+00:00', '2026-04-03T14:33:39.495478+00:00');
 insert into outbound_notification_queue (id, recommendation_id, notification_id, status, attempt_count, next_retry_at, last_error, created_at, updated_at) values (313, 313, 313, 'failed', 0, '2026-04-02T21:07:19.495478+00:00', 'Повторная ошибка отправки', '2026-03-19T09:19:31.495478+00:00', '2026-04-04T01:51:57.495478+00:00');
 
+
+-- Reset sequences after explicit ID inserts from seed data.
+SELECT setval(pg_get_serial_sequence('regions', 'id'), COALESCE((SELECT MAX(id) FROM regions), 1));
+SELECT setval(pg_get_serial_sequence('categories', 'id'), COALESCE((SELECT MAX(id) FROM categories), 1));
+SELECT setval(pg_get_serial_sequence('sellers', 'id'), COALESCE((SELECT MAX(id) FROM sellers), 1));
+SELECT setval(pg_get_serial_sequence('seller_models', 'id'), COALESCE((SELECT MAX(id) FROM seller_models), 1));
+SELECT setval(pg_get_serial_sequence('seller_products', 'id'), COALESCE((SELECT MAX(id) FROM seller_products), 1));
+SELECT setval(pg_get_serial_sequence('seller_orders', 'id'), COALESCE((SELECT MAX(id) FROM seller_orders), 1));
+SELECT setval(pg_get_serial_sequence('seller_activity_log', 'id'), COALESCE((SELECT MAX(id) FROM seller_activity_log), 1));
+SELECT setval(pg_get_serial_sequence('seller_category_presence', 'id'), COALESCE((SELECT MAX(id) FROM seller_category_presence), 1));
+SELECT setval(pg_get_serial_sequence('seller_metrics_snapshot', 'id'), COALESCE((SELECT MAX(id) FROM seller_metrics_snapshot), 1));
+SELECT setval(pg_get_serial_sequence('seller_category_metrics', 'id'), COALESCE((SELECT MAX(id) FROM seller_category_metrics), 1));
+SELECT setval(pg_get_serial_sequence('seller_region_metrics', 'id'), COALESCE((SELECT MAX(id) FROM seller_region_metrics), 1));
+SELECT setval(pg_get_serial_sequence('seller_features', 'id'), COALESCE((SELECT MAX(id) FROM seller_features), 1));
+SELECT setval(pg_get_serial_sequence('recommendation_types', 'id'), COALESCE((SELECT MAX(id) FROM recommendation_types), 1));
+SELECT setval(pg_get_serial_sequence('recommendation_rules', 'id'), COALESCE((SELECT MAX(id) FROM recommendation_rules), 1));
+SELECT setval(pg_get_serial_sequence('notification_templates', 'id'), COALESCE((SELECT MAX(id) FROM notification_templates), 1));
+SELECT setval(pg_get_serial_sequence('seller_trigger_log', 'id'), COALESCE((SELECT MAX(id) FROM seller_trigger_log), 1));
+SELECT setval(pg_get_serial_sequence('recommendations', 'id'), COALESCE((SELECT MAX(id) FROM recommendations), 1));
+SELECT setval(pg_get_serial_sequence('seller_notification_log', 'id'), COALESCE((SELECT MAX(id) FROM seller_notification_log), 1));
+SELECT setval(pg_get_serial_sequence('recommendation_feedback', 'id'), COALESCE((SELECT MAX(id) FROM recommendation_feedback), 1));
+SELECT setval(pg_get_serial_sequence('data_load_jobs', 'id'), COALESCE((SELECT MAX(id) FROM data_load_jobs), 1));
+SELECT setval(pg_get_serial_sequence('analysis_jobs', 'id'), COALESCE((SELECT MAX(id) FROM analysis_jobs), 1));
+SELECT setval(pg_get_serial_sequence('outbound_notification_queue', 'id'), COALESCE((SELECT MAX(id) FROM outbound_notification_queue), 1));
+
 commit;
 

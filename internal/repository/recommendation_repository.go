@@ -14,7 +14,7 @@ import (
 type RecommendationRepository interface {
 	GetActiveBySellerID(ctx context.Context, sellerID int64) ([]domain.Recommendation, error)
 	UpdateStatus(ctx context.Context, recommendationID int64, status string) error
-	CreateFeedback(ctx context.Context, sellerID int64, recommendationID int64, feedbackType string) error
+	CreateFeedback(ctx context.Context, recommendationID int64, feedbackType string) error
 }
 
 type postgresRecommendationRepository struct {
@@ -79,13 +79,18 @@ func (r *postgresRecommendationRepository) UpdateStatus(ctx context.Context, rec
 	return nil
 }
 
-func (r *postgresRecommendationRepository) CreateFeedback(ctx context.Context, sellerID int64, recommendationID int64, feedbackType string) error {
-	_, err := r.pool.Exec(ctx, `
+func (r *postgresRecommendationRepository) CreateFeedback(ctx context.Context, recommendationID int64, feedbackType string) error {
+	tag, err := r.pool.Exec(ctx, `
 		INSERT INTO recommendation_feedback (seller_id, recommendation_id, feedback_type)
-		VALUES ($1, $2, $3)
-	`, sellerID, recommendationID, feedbackType)
+		SELECT seller_id, $1, $2
+		FROM recommendations
+		WHERE id = $1
+	`, recommendationID, feedbackType)
 	if err != nil {
 		return fmt.Errorf("insert recommendation feedback: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("recommendation %d not found", recommendationID)
 	}
 	return nil
 }

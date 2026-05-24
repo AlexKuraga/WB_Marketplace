@@ -1190,6 +1190,38 @@ def write_sellers_and_related(w: SqlWriter, reg: Registry, rec_type_map: dict[st
 
 
 def write_footer(w: SqlWriter) -> None:
+    w.comment("Reset sequences after explicit ID inserts from seed data")
+    tables = [
+        "regions",
+        "categories",
+        "sellers",
+        "seller_models",
+        "seller_products",
+        "seller_orders",
+        "seller_activity_log",
+        "seller_category_presence",
+        "seller_metrics_snapshot",
+        "seller_category_metrics",
+        "seller_region_metrics",
+        "seller_features",
+        "recommendation_types",
+        "recommendation_rules",
+        "notification_templates",
+        "seller_trigger_log",
+        "recommendations",
+        "seller_notification_log",
+        "recommendation_feedback",
+        "data_load_jobs",
+        "analysis_jobs",
+        "outbound_notification_queue",
+    ]
+
+    for table in tables:
+        w.line(
+            f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+            f"COALESCE((SELECT MAX(id) FROM {table}), 1));"
+        )
+
     w.line("commit;")
     w.line()
 

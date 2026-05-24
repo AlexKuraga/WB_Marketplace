@@ -14,7 +14,9 @@ import (
 	"wb-marketplace/internal/db"
 	"wb-marketplace/internal/http/router"
 	"wb-marketplace/internal/notifications"
+	"wb-marketplace/internal/repository"
 	"wb-marketplace/internal/rules"
+	"wb-marketplace/internal/service"
 )
 
 func main() {
@@ -40,7 +42,10 @@ func run() error {
 	_ = rules.New()
 	_ = notifications.New()
 
-	handler := router.New(pool)
+	services := service.New(service.Repositories(
+		repository.NewRecommendationRepository(pool),
+	))
+	handler := router.New(services)
 	server := &http.Server{
 		Addr:    cfg.HTTPAddr(),
 		Handler: handler,
