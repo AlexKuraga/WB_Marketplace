@@ -27,11 +27,11 @@ func (m *mockRecommendationRepository) CreateFeedback(ctx context.Context, recom
 }
 
 func TestGetActiveBySellerReturnsEmptySlice(t *testing.T) {
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{
+	svc := NewRecommendationService(repositoryBundle{Recommendations: &mockRecommendationRepository{
 		getActiveBySellerIDFn: func(ctx context.Context, sellerID int64) ([]domain.Recommendation, error) {
 			return nil, nil
 		},
-	}))
+	}})
 
 	recs, err := svc.GetActiveBySeller(context.Background(), 10)
 	if err != nil {
@@ -46,8 +46,9 @@ func TestGetActiveBySellerReturnsEmptySlice(t *testing.T) {
 }
 
 func TestGetActiveBySellerValidation(t *testing.T) {
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{}))
-
+	svc := NewRecommendationService(repositoryBundle{
+		Recommendations: &mockRecommendationRepository{},
+	})
 	_, err := svc.GetActiveBySeller(context.Background(), 0)
 	if err == nil {
 		t.Fatal("expected validation error")
@@ -57,7 +58,7 @@ func TestGetActiveBySellerValidation(t *testing.T) {
 func TestRecordView(t *testing.T) {
 	var gotStatus, gotFeedback string
 
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{
+	svc := NewRecommendationService(repositoryBundle{Recommendations: &mockRecommendationRepository{
 		updateStatusFn: func(ctx context.Context, recommendationID int64, status string) error {
 			if recommendationID != 42 {
 				t.Fatalf("recommendationID = %d, want 42", recommendationID)
@@ -72,7 +73,7 @@ func TestRecordView(t *testing.T) {
 			gotFeedback = feedbackType
 			return nil
 		},
-	}))
+	}})
 
 	if err := svc.RecordView(context.Background(), 42); err != nil {
 		t.Fatalf("RecordView() error = %v", err)
@@ -88,7 +89,7 @@ func TestRecordView(t *testing.T) {
 func TestRecordAccept(t *testing.T) {
 	var gotStatus, gotFeedback string
 
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{
+	svc := NewRecommendationService(repositoryBundle{Recommendations: &mockRecommendationRepository{
 		updateStatusFn: func(ctx context.Context, recommendationID int64, status string) error {
 			gotStatus = status
 			return nil
@@ -97,7 +98,7 @@ func TestRecordAccept(t *testing.T) {
 			gotFeedback = feedbackType
 			return nil
 		},
-	}))
+	}})
 
 	if err := svc.RecordAccept(context.Background(), 1); err != nil {
 		t.Fatalf("RecordAccept() error = %v", err)
@@ -113,7 +114,7 @@ func TestRecordAccept(t *testing.T) {
 func TestRecordReject(t *testing.T) {
 	var gotStatus, gotFeedback string
 
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{
+	svc := NewRecommendationService(repositoryBundle{Recommendations: &mockRecommendationRepository{
 		updateStatusFn: func(ctx context.Context, recommendationID int64, status string) error {
 			gotStatus = status
 			return nil
@@ -122,7 +123,7 @@ func TestRecordReject(t *testing.T) {
 			gotFeedback = feedbackType
 			return nil
 		},
-	}))
+	}})
 
 	if err := svc.RecordReject(context.Background(), 1); err != nil {
 		t.Fatalf("RecordReject() error = %v", err)
@@ -136,11 +137,11 @@ func TestRecordReject(t *testing.T) {
 }
 
 func TestRecordViewNotFound(t *testing.T) {
-	svc := NewRecommendationService(Repositories(&mockRecommendationRepository{
+	svc := NewRecommendationService(repositoryBundle{Recommendations: &mockRecommendationRepository{
 		updateStatusFn: func(ctx context.Context, recommendationID int64, status string) error {
 			return errors.New("recommendation 99 not found")
 		},
-	}))
+	}})
 
 	err := svc.RecordView(context.Background(), 99)
 	if !errors.Is(err, ErrRecommendationNotFound) {

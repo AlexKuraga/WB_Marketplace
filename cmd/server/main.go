@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"wb-marketplace/internal/analysis"
 	"wb-marketplace/internal/config"
 	"wb-marketplace/internal/db"
 	"wb-marketplace/internal/http/router"
@@ -38,12 +37,13 @@ func run() error {
 	}
 	defer pool.Close()
 
-	_ = analysis.New()
 	_ = rules.New()
 	_ = notifications.New()
 
 	services := service.New(service.Repositories(
 		repository.NewRecommendationRepository(pool),
+		repository.NewRuleRepository(pool),
+		repository.NewAnalysisRepository(pool),
 	))
 	handler := router.New(services)
 	server := &http.Server{

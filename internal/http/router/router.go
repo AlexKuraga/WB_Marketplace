@@ -20,10 +20,13 @@ func New(services *service.Services) http.Handler {
 
 	r.Get("/health", handlers.Health)
 
-	if services != nil && services.Recommendation != nil {
-		recHandler := handlers.NewRecommendationHandler(services.Recommendation)
+	if services == nil {
+		return r
+	}
 
-		r.Route("/api/v1", func(r chi.Router) {
+	r.Route("/api/v1", func(r chi.Router) {
+		if services.Recommendation != nil {
+			recHandler := handlers.NewRecommendationHandler(services.Recommendation)
 			r.Get("/sellers/{sellerId}/recommendations", recHandler.ListBySeller)
 
 			r.Route("/recommendations", func(r chi.Router) {
@@ -31,8 +34,17 @@ func New(services *service.Services) http.Handler {
 				r.Post("/{id}/accept", recHandler.Accept)
 				r.Post("/{id}/reject", recHandler.Reject)
 			})
-		})
-	}
+		}
+
+		if services.Rule != nil && services.Analysis != nil {
+			adminHandler := handlers.NewAdminHandler(services.Rule, services.Analysis)
+			r.Route("/admin", func(r chi.Router) {
+				r.Get("/rules", adminHandler.ListRules)
+				r.Post("/rules", adminHandler.CreateRule)
+				r.Post("/run-analysis", adminHandler.RunAnalysis)
+			})
+		}
+	})
 
 	return r
 }

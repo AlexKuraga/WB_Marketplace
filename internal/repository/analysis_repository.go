@@ -18,7 +18,8 @@ type AnalysisRepository interface {
 	CreateTrigger(ctx context.Context, trigger domain.SellerTriggerLog) error
 	CreateRecommendation(ctx context.Context, recommendation domain.Recommendation) error
 	CreateNotificationLog(ctx context.Context, notification domain.SellerNotificationLog) error
-	CreateAnalysisJob(ctx context.Context, job domain.AnalysisJob) error
+	CreateAnalysisJob(ctx context.Context, job domain.AnalysisJob) (int64, error)
+	UpdateAnalysisJob(ctx context.Context, job domain.AnalysisJob) error
 }
 
 type postgresAnalysisRepository struct {
@@ -164,12 +165,14 @@ func (r *postgresAnalysisRepository) CreateNotificationLog(ctx context.Context, 
 	return nil
 }
 
-func (r *postgresAnalysisRepository) CreateAnalysisJob(ctx context.Context, job domain.AnalysisJob) error {
-	_, err := r.pool.Exec(ctx, `
+func (r *postgresAnalysisRepository) CreateAnalysisJob(ctx context.Context, job domain.AnalysisJob) (int64, error) {
+	var id int64
+	err := r.pool.QueryRow(ctx, `
 		INSERT INTO analysis_jobs (
 			job_type, status, started_at, finished_at,
 			sellers_processed, recommendations_created, triggers_created, error_message
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id
 	`,
 		job.JobType,
 		job.Status,
@@ -179,9 +182,37 @@ func (r *postgresAnalysisRepository) CreateAnalysisJob(ctx context.Context, job 
 		job.RecommendationsCreated,
 		job.TriggersCreated,
 		job.ErrorMessage,
+	).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("insert analysis job: %w", err)
+	}
+	return id, nil
+}
+
+func (r *postgresAnalysisRepository) UpdateAnalysisJob(ctx context.Context, job domain.AnalysisJob) error {
+	tag, err := r.pool.Exec(ctx, `
+		UPDATE analysis_jobs
+		SET status = $2,
+		    finished_at = $3,
+		    sellers_processed = $4,
+		    recommendations_created = $5,
+		    triggers_created = $6,
+		    error_message = $7
+		WHERE id = $1
+	`,
+		job.ID,
+		job.Status,
+		job.FinishedAt,
+		job.SellersProcessed,
+		job.RecommendationsCreated,
+		job.TriggersCreated,
+		job.ErrorMessage,
 	)
 	if err != nil {
-		return fmt.Errorf("insert analysis job: %w", err)
+		return fmt.Errorf("update analysis job: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("analysis job %d not found", job.ID)
 	}
 	return nil
 }
