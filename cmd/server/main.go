@@ -44,6 +44,7 @@ func run() error {
 		repository.NewRecommendationRepository(pool),
 		repository.NewRuleRepository(pool),
 		repository.NewAnalysisRepository(pool),
+		repository.NewNotificationRepository(pool),
 	))
 	handler := router.New(services)
 	server := &http.Server{

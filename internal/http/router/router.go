@@ -46,5 +46,10 @@ func New(services *service.Services) http.Handler {
 		}
 	})
 
+	if services.Notification != nil {
+		notificationHandler := handlers.NewNotificationHandler(services.Notification)
+		r.Post("/internal/notifications/process-outbox", notificationHandler.ProcessOutbox)
+	}
+
 	return r
 }
