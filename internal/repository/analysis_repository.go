@@ -15,8 +15,8 @@ import (
 type AnalysisRepository interface {
 	ListSellersForAnalysis(ctx context.Context) ([]domain.Seller, error)
 	GetLatestSnapshot(ctx context.Context, sellerID int64) (*domain.SellerMetricsSnapshot, error)
-	CreateTrigger(ctx context.Context, trigger domain.SellerTriggerLog) error
-	CreateRecommendation(ctx context.Context, recommendation domain.Recommendation) error
+	CreateTrigger(ctx context.Context, trigger domain.SellerTriggerLog) (int64, error)
+	CreateRecommendation(ctx context.Context, recommendation domain.Recommendation) (int64, error)
 	CreateNotificationLog(ctx context.Context, notification domain.SellerNotificationLog) error
 	CreateAnalysisJob(ctx context.Context, job domain.AnalysisJob) (int64, error)
 	UpdateAnalysisJob(ctx context.Context, job domain.AnalysisJob) error
@@ -93,12 +93,14 @@ func (r *postgresAnalysisRepository) GetLatestSnapshot(ctx context.Context, sell
 	return &snapshot, nil
 }
 
-func (r *postgresAnalysisRepository) CreateTrigger(ctx context.Context, trigger domain.SellerTriggerLog) error {
-	_, err := r.pool.Exec(ctx, `
+func (r *postgresAnalysisRepository) CreateTrigger(ctx context.Context, trigger domain.SellerTriggerLog) (int64, error) {
+	var id int64
+	err := r.pool.QueryRow(ctx, `
 		INSERT INTO seller_trigger_log (
 			seller_id, rule_id, trigger_code, triggered_at, period_key,
 			snapshot_id, payload_json, status
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id
 	`,
 		trigger.SellerID,
 		trigger.RuleID,
@@ -108,19 +110,21 @@ func (r *postgresAnalysisRepository) CreateTrigger(ctx context.Context, trigger 
 		trigger.SnapshotID,
 		trigger.PayloadJSON,
 		trigger.Status,
-	)
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("insert seller trigger log: %w", err)
+		return 0, fmt.Errorf("insert seller trigger log: %w", err)
 	}
-	return nil
+	return id, nil
 }
 
-func (r *postgresAnalysisRepository) CreateRecommendation(ctx context.Context, recommendation domain.Recommendation) error {
-	_, err := r.pool.Exec(ctx, `
+func (r *postgresAnalysisRepository) CreateRecommendation(ctx context.Context, recommendation domain.Recommendation) (int64, error) {
+	var id int64
+	err := r.pool.QueryRow(ctx, `
 		INSERT INTO recommendations (
 			seller_id, trigger_id, recommendation_type_id, template_id,
 			title, description, reason_text, priority, score, status, expires_at
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		RETURNING id
 	`,
 		recommendation.SellerID,
 		recommendation.TriggerID,
@@ -133,11 +137,11 @@ func (r *postgresAnalysisRepository) CreateRecommendation(ctx context.Context, r
 		recommendation.Score,
 		recommendation.Status,
 		recommendation.ExpiresAt,
-	)
+	).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("insert recommendation: %w", err)
+		return 0, fmt.Errorf("insert recommendation: %w", err)
 	}
-	return nil
+	return id, nil
 }
 
 func (r *postgresAnalysisRepository) CreateNotificationLog(ctx context.Context, notification domain.SellerNotificationLog) error {
