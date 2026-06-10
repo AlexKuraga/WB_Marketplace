@@ -20,13 +20,18 @@ func New(services *service.Services) http.Handler {
 
 	r.Get("/health", handlers.Health)
 
-	if services == nil {
-		return r
-	}
+	aiDemoHandler := handlers.NewAIDemoHandler()
+	r.Get("/demo", aiDemoHandler.DemoPage)
 
 	r.Route("/api/v1", func(r chi.Router) {
+
+		if services == nil {
+			return
+		}
+
 		if services.Recommendation != nil {
 			recHandler := handlers.NewRecommendationHandler(services.Recommendation)
+
 			r.Get("/sellers/{sellerId}/recommendations", recHandler.ListBySeller)
 
 			r.Route("/recommendations", func(r chi.Router) {
@@ -38,15 +43,19 @@ func New(services *service.Services) http.Handler {
 
 		if services.Rule != nil && services.Analysis != nil {
 			adminHandler := handlers.NewAdminHandler(services.Rule, services.Analysis)
+
 			r.Route("/admin", func(r chi.Router) {
 				r.Get("/rules", adminHandler.ListRules)
 				r.Post("/rules", adminHandler.CreateRule)
 				r.Post("/run-analysis", adminHandler.RunAnalysis)
+
+				// новый endpoint
+				r.Post("/generate-ai-recommendation", aiDemoHandler.Generate)
 			})
 		}
 	})
 
-	if services.Notification != nil {
+	if services != nil && services.Notification != nil {
 		notificationHandler := handlers.NewNotificationHandler(services.Notification)
 		r.Post("/internal/notifications/process-outbox", notificationHandler.ProcessOutbox)
 	}

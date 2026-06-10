@@ -132,6 +132,10 @@ func TestRunManualAnalysisCreatesRecommendations(t *testing.T) {
 				return 501, nil
 			},
 			createRecommendationFn: func(ctx context.Context, recommendation domain.Recommendation) (int64, error) {
+				recommendation.ID = 601
+				recommendation.CreatedAt = time.Now().UTC()
+				recommendation.UpdatedAt = time.Now().UTC()
+				
 				recommendations = append(recommendations, recommendation)
 				return 601, nil
 			},
@@ -146,16 +150,46 @@ func TestRunManualAnalysisCreatesRecommendations(t *testing.T) {
 	}
 	r := recommendations[0]
 
-	t.Logf("Title=%s", r.Title)
-	t.Logf("Description=%s", r.Description)
+	t.Log("========== RECOMMENDATION ==========")
+	t.Logf("ID: %d", r.ID)
+	t.Logf("SellerID: %d", r.SellerID)
+	t.Logf("TriggerID: %d", r.TriggerID)
+	t.Logf("RecommendationTypeID: %d", r.RecommendationTypeID)
+
+	if r.TemplateID != nil {
+		t.Logf("TemplateID: %d", *r.TemplateID)
+	} else {
+		t.Log("TemplateID: <nil>")
+	}
+
+	t.Logf("Title: %s", r.Title)
+	t.Logf("Description: %s", r.Description)
 
 	if r.ReasonText != nil {
-		t.Logf("ReasonText=%s", *r.ReasonText)
+		t.Logf("ReasonText: %s", *r.ReasonText)
+	} else {
+		t.Log("ReasonText: <nil>")
 	}
 
+	t.Logf("Priority: %d", r.Priority)
+
 	if r.Score != nil {
-		t.Logf("Score=%f", *r.Score)
+		t.Logf("Score: %.4f", *r.Score)
+	} else {
+		t.Log("Score: <nil>")
 	}
+
+	t.Logf("Status: %s", r.Status)
+
+	if r.ExpiresAt != nil {
+		t.Logf("ExpiresAt: %s", r.ExpiresAt.Format(time.RFC3339))
+	} else {
+		t.Log("ExpiresAt: <nil>")
+	}
+
+	t.Logf("CreatedAt: %s", r.CreatedAt.Format(time.RFC3339))
+	t.Logf("UpdatedAt: %s", r.UpdatedAt.Format(time.RFC3339))
+	t.Log("===================================")
 	if len(recommendations) != 1 {
 		t.Fatalf("len(recommendations) = %d, want 1", len(recommendations))
 	}
